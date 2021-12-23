@@ -11,4 +11,4 @@ for i in range(len(cogs)):
 
 
 
-client.run("OTIzNTc5ODc1OTEzMjYxMDg3.YcSEyQ.r1kiqSAQJjwfETFcNc5FSnANY10")
+client.run("Token")
