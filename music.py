@@ -3,6 +3,8 @@ import asyncio
 from discord.ext import commands 
 import youtube_dl
 
+youtube_dl.utils.bug_reports_message = lambda: ''
+
 ytdl_format_options = {
     'format': 'bestaudio/best',
     'outtmpl': 'downloads/%(id)s.mp3',
@@ -39,9 +41,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
         if 'entries' in data:
-        
-            data = data['entries'][0]
             
+            data = data['entries'][0]
+           
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
@@ -73,7 +75,7 @@ class music(commands.Cog):
             await ctx.author.voice.channel.connect()
 
         player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
-        #self.queue.insert(0,player)
+        
 
         if ctx.voice_client.is_playing():
             self.queue.insert(0,player)
@@ -90,6 +92,30 @@ class music(commands.Cog):
 
             ctx.voice_client.play(player, after=loop_play)
         await self.nowplaying(ctx)
+
+    @commands.command(name='nowplaying', description='Music playing now', aliases=['np'])
+    async def nowplaying(self,ctx):
+        if ctx.voice_client != None:
+            tmp = f'Now playing:  `{ctx.voice_client.source.title}`' \
+                if ctx.voice_client.is_playing() else 'Not playing anything!'
+
+            embed = discord.Embed(title=tmp, color=self.bot.embed_color)
+            await ctx.send(embed=embed)
+
+    @commands.command(name='queue', description='List music queue', aliases=['q'])
+    async def queue(self,ctx):
+        if ctx.voice_client != None:
+            # TODO: indicate that is paused if that's the case
+            if ctx.voice_client.source != None:
+                embed = discord.Embed(title=f'Now playing:  `{ctx.voice_client.source.title}`',color=self.bot.embed_color)
+                # self.nowplaying(ctx)
+                
+                _sizeq = len(self.queue)
+                for i in range(_sizeq):
+                    embed.add_field(name=f'**{i+1}.** `{self.queue[_sizeq-i-1].title}`', value='============================', inline=False)
+                await ctx.send(embed=embed)
+            elif self.queue == []:
+               await ctx.send(embed=discord.Embed(title='Sadly the queue is empty :c',color=self.bot.embed_color))
 
     @commands.command()
     async def pause(self,ctx):
