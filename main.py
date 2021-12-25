@@ -17,4 +17,4 @@ async def on_message_edit(before, after):
     await client.process_commands(after)
 
 
-client.run("OTIzNTc5ODc1OTEzMjYxMDg3.YcSEyQ.XN6aH75v0waLeHXcVXSJcaC6rgQ")
+client.run("Token")
